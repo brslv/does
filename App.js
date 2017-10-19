@@ -1,3 +1,4 @@
+const { promisify } = require('util')
 const path = require('path')
 const fs = require('fs')
 
@@ -17,14 +18,16 @@ class App {
         this._parseCommands()
     }
 
-    _loadTasksFile(tasksFilePath) {
-        fs.readFile(tasksFilePath, 'utf8', (err, content) => {
-            if (err) {
-                console.log(`Invalid file ${this._tasksFile}`)
-            }
+    async _loadTasksFile(tasksFilePath) {
+        const readFileAsync = promisify(fs.readFile)
 
-            console.log(content)
-        })
+        try {
+            const content = await readFileAsync(tasksFilePath + 'err', 'utf8')
+        } catch (err) {
+            return console.log(err)
+        }
+
+        console.log(content)
     }
 
     _resolveTasksFilePath() {
