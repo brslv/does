@@ -1,3 +1,6 @@
+const path = require('path')
+const fs = require('fs')
+
 const List = require('./commands/List')
 const Add = require('./commands/Add')
 const program = require('commander')
@@ -9,8 +12,23 @@ class App {
     }
 
     run() {
+        this._loadTasksFile(this._resolveTasksFilePath())
         this._registerCommands()
         this._parseCommands()
+    }
+
+    _loadTasksFile(tasksFilePath) {
+        fs.readFile(tasksFilePath, 'utf8', (err, content) => {
+            if (err) {
+                console.log(`Invalid file ${this._tasksFile}`)
+            }
+
+            console.log(content)
+        })
+    }
+
+    _resolveTasksFilePath() {
+        return path.resolve(__dirname, this._config.tasksFile)
     }
 
     _registerCommands() {
