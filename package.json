@@ -4,7 +4,7 @@
   "description": "A simple todo utility for the power-user",
   "main": "main.js",
   "bin": {
-      "does": "./main.js"
+    "does": "./main.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,6 +12,7 @@
   "author": "Borislav Grigorov",
   "license": "ISC",
   "dependencies": {
-    "commander": "^2.11.0"
+    "commander": "^2.11.0",
+    "redux": "^3.7.2"
   }
 }

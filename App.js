@@ -4,6 +4,8 @@ const fs = require('fs')
 
 const List = require('./commands/List')
 const Add = require('./commands/Add')
+const reducers = require('./reducers')
+const { createStore } = require('redux')
 const program = require('commander')
 
 class App {
@@ -13,7 +15,10 @@ class App {
     }
 
     run() {
-        this._loadTasksFile(this._resolveTasksFilePath())
+        this._store = createStore(reducers)
+        this._store.subscribe(() => console.log(this._store.getState()))
+
+        this._loadTasksFile(path.resolve(__dirname, this._config.tasksFile))
         this._registerCommands()
         this._parseCommands()
     }
@@ -22,16 +27,20 @@ class App {
         const readFileAsync = promisify(fs.readFile)
 
         try {
-            const content = await readFileAsync(tasksFilePath + 'err', 'utf8')
+            const content = await readFileAsync(tasksFilePath, 'utf8')
+            const tasks = this._parseTasks(content.split('\n').filter(task => task !== ''))
+
+            // add tasks to the store
         } catch (err) {
             return console.log(err)
         }
-
-        console.log(content)
     }
 
-    _resolveTasksFilePath() {
-        return path.resolve(__dirname, this._config.tasksFile)
+    _parseTasks(tasks) {
+        const completed = tasks.filter(task => task.startsWith('-'))
+        const notCompleted = tasks.filter(task => task.startsWith('x'))
+
+        return { completed, notCompleted }
     }
 
     _registerCommands() {
@@ -42,13 +51,19 @@ class App {
             .command('add <task>')
             .alias('a')
             .description('Add a new task to the tasks list')
-            .action((new Add()).handle)
+            .action((task, options) => {
+                const add = new Add(this._store)
+                add.handle(task, options)
+            })
 
         program
             .command('list')
             .alias('l')
             .description('List all tasks from the tasks list')
-            .action((new List()).handle)
+            .action(options => {
+                const list = new List(this._store)
+                list.handle(options)
+            })
     }
 
     _parseCommands() {
